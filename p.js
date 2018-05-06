@@ -1,3 +1,5 @@
+import { freemem } from 'os';
+
 // Telegram Bot @rynco_bot
 
 const version = '0.2.17 beta'
@@ -9,14 +11,8 @@ const fs = require('fs')
 const _ = require('lodash')
 const os = require('os')
 const http = require('http')
-const cp = require('child_process')
 const timer = require('timers')
-try {
-  const yaml = require('js-yaml')
-} catch (e) {
-  yamlNotPresent = true
-  cp.exec('npm install --save js-yaml')
-}
+const zbase32 = require('zbase32')
 // const pix = require('rippix.js')
 
 //
@@ -32,6 +28,27 @@ const defaultConfig = {
     random: []
   },
   expectStickerFrom: [],
+  react: {
+    '3v781dr1': {
+      // example
+      trigger: '^(wtd+)$', // regex as default
+      reply: ['\\1', '(wtd!)'] // text as default
+    },
+    '3v78ejwb': {
+      trigger: {
+        type: 'notification',
+        value: 'new_chat_members'
+      },
+      reply: [
+        {
+          type: 'sticker',
+          value: 'CAADBQADHQEAAoC6CwoxFcjTBmhRGAI'
+        },
+        '有新大佬来了。'
+      ],
+      replySequence: true
+    }
+  },
   replies: {
     ping: ['Pong!'],
     success: ['Got that!', 'Gocha~!'],
@@ -52,6 +69,21 @@ const defaultConfig = {
   },
   _randomMargin: 0.1,
   _repeatTimeCoef: 250
+}
+
+class React {
+  constructor(obj){
+    _.assign(this, obj)
+    this.id = obj.name
+  }
+
+  set trigger(triggerObj){
+
+  }
+
+  free(){
+    delete config[this.id];
+  }
 }
 
 const jsondir = 'https://github.com/wfcrs/rndfd/raw/master/foods.json'
@@ -98,30 +130,34 @@ Array.prototype.random = function() {
 }
 
 function getKeys(msg) {
-  http.get(jsondir, function (response) {
-    response.setEncoding('utf8');
-    var Data = '';
-    response.on('data', function (data) {    //加载到内存
-        Data += data;
-    }).on('end', function () {          //加载完
-      sum = 0
-      bot.sendMessage(msg.chat.id, ".")
-      foods = Data
-      Object.keys(foods).map((v, i) => (sum += foods[v].weight))
-      r = Math.random() * sum
-      var selectedFood
-      for (food of Object.keys(foods)) {
-        r -= foods[food]
-        if (r <= 0) {
-          selectedFood = foods[food].name
-          break
-        }
-      }
-      bot.sendMessage(msg.chat.id, selectedFood, {
-        reply_to_message_id: msg.message_id
+  http.get(jsondir, function(response) {
+    response.setEncoding('utf8')
+    var Data = ''
+    response
+      .on('data', function(data) {
+        //加载到内存
+        Data += data
       })
-    })
-})
+      .on('end', function() {
+        //加载完
+        sum = 0
+        bot.sendMessage(msg.chat.id, '.')
+        foods = Data
+        Object.keys(foods).map((v, i) => (sum += foods[v].weight))
+        r = Math.random() * sum
+        var selectedFood
+        for (food of Object.keys(foods)) {
+          r -= foods[food]
+          if (r <= 0) {
+            selectedFood = foods[food].name
+            break
+          }
+        }
+        bot.sendMessage(msg.chat.id, selectedFood, {
+          reply_to_message_id: msg.message_id
+        })
+      })
+  })
 }
 
 function isUserApproved(userId) {
@@ -158,14 +194,6 @@ function reportSuccess(chatId) {
 function forceRefreshConfig() {
   config = new Object()
   try {
-    // if (fs.existsSync('botconfig.yml')) {
-    //   config = _.assign(
-    //     defaultConfig,
-    //     yaml.safeLoad(
-    //       fs.readFileSync('botconfig.yml', { flag: 'r', encoding: 'utf8' })
-    //     )
-    //   )
-    // } else {
     config = _.assign(
       defaultConfig,
       JSON.parse(
@@ -175,7 +203,6 @@ function forceRefreshConfig() {
         })
       )
     )
-    // }
   } catch (e) {
     return e
   }
@@ -224,12 +251,28 @@ function addSticker(sticker, category, msg) {
   console.log(config.stickers)
 }
 
-// function executeWithPasscode(passcode, , func){
-
-// }
+function getReactID() {
+  var date = new Date()
+  var timestamp = (date.getFullYear() % 100) * 100 + date.getMonth()
+  var hash = _.padStart(timestamp.toString(36).slice(0, 3), 3, '0')
+  hash =
+    hash +
+    _.padStart(
+      Math.floor(Math.random() * 46656)
+        .toString(36)
+        .slice(0, 3),
+      3,
+      '0'
+    )
+  return hash
+}
 
 //
 //
+
+function createNewReact() {
+  var 
+}
 
 // bot.onText(/\/(yandere|yande\.re|y\/) *([0-9]*)/, (msg, match) => {})
 
@@ -278,41 +321,41 @@ function addSticker(sticker, category, msg) {
 //   bot.sendMessage(msg.chat.id, getVersion())
 // })
 
-// bot.onText(/\/dumpConfig/, (msg, match) => {
-//   if (msg.chat.type != 'private') return
-//   if (!isUserApproved(msg.from.id)) {
-//     reportError(
-//       msg.chat.id,
-//       'UserNotApprovedException: Please run this command AFTER being approved.'
-//     )
-//     return
-//   } else {
-//     refreshConfig()
-//   }
-// })
-// bot.onText(/\/refreshConfig/, (msg, match) => {
-//   if (!isUserApproved(msg.from.id)) {
-//     reportError(
-//       msg.chat.id,
-//       'UserNotApprovedException: Please run this command AFTER being approved.'
-//     )
-//     return
-//   }
-//   try {
-//     forceRefreshConfig()
-//     bot.sendMessage(
-//       msg.chat.id,
-//       [
-//         config.replies.forcerefresh.random(),
-//         '----',
-//         getVersion()
-//         // JSON.stringify(config)
-//       ].join('\n')
-//     )
-//   } catch (e) {
-//     reportError(e)
-//   }
-// })
+bot.onText(/\/dumpConfig/, (msg, match) => {
+  if (msg.chat.type != 'private') return
+  if (!isUserApproved(msg.from.id)) {
+    reportError(
+      msg.chat.id,
+      'UserNotApprovedException: Please run this command AFTER being approved.'
+    )
+    return
+  } else {
+    refreshConfig()
+  }
+})
+bot.onText(/\/refreshConfig/, (msg, match) => {
+  if (!isUserApproved(msg.from.id)) {
+    reportError(
+      msg.chat.id,
+      'UserNotApprovedException: Please run this command AFTER being approved.'
+    )
+    return
+  }
+  try {
+    forceRefreshConfig()
+    bot.sendMessage(
+      msg.chat.id,
+      [
+        config.replies.forcerefresh.random(),
+        '----',
+        getVersion()
+        // JSON.stringify(config)
+      ].join('\n')
+    )
+  } catch (e) {
+    reportError(e)
+  }
+})
 
 // bot.onText(/\/approve( (.+)( (.+))?)?/, (msg, match) => {
 //   chatId = msg.chat.id
