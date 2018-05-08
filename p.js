@@ -2,7 +2,7 @@ import { freemem } from 'os';
 
 // Telegram Bot @rynco_bot
 
-const version = '0.2.17 beta'
+const version = '0.2.24 beta'
 
 // ===
 
@@ -415,9 +415,15 @@ bot.onText(/\/restart/, (msg, match) => {
     return
   }
   config.restartTo = msg.chat.id
+  bot.sendMessage(msg.chat.id, "Packing up for a restart...")
   refreshConfig()
-  cp.execSync('forever restart all')
+  bot.stopPolling()
+  setTimeout(packUpForRestart, 1000);
 })
+function packUpForRestart(){
+  cp.execSync('forever restartall')
+}
+
 
 bot.onText(/\/system (.+)/, (msg, match) => {
   serviceUnavil(msg.chat.id)
@@ -461,4 +467,12 @@ bot.onText(/^[^\\\/].*/, msg => {
   }
   // if (msg.chat.type == 'private')
   //   bot.sendMessage(msg.chat.id, `RndNum: ${random}`)
+})
+
+bot.onText(/\/radix( +f +(%d+))? +(%d+) +([+-]?%d+)/im, (msg, match) => {
+  radix = match[3]
+  number = match[4]
+  fromRadix = match[1] ? parseInt(match[2]) : 10
+  result = parseInt(number, fromRadix).toString(radix)
+  bot.sendMessage(msg.chat.id, result)
 })
