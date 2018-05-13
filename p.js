@@ -8,7 +8,7 @@ const version = '0.2.24 beta'
 
 const TelegramBot = require('node-telegram-bot-api')
 const fs = require('fs')
-const _ = require('lodash')
+import _ from 'lodash'
 const os = require('os')
 const http = require('http')
 const timer = require('timers')
@@ -251,28 +251,7 @@ function addSticker(sticker, category, msg) {
   console.log(config.stickers)
 }
 
-function getReactID() {
-  var date = new Date()
-  var timestamp = (date.getFullYear() % 100) * 100 + date.getMonth()
-  var hash = _.padStart(timestamp.toString(36).slice(0, 3), 3, '0')
-  hash =
-    hash +
-    _.padStart(
-      Math.floor(Math.random() * 46656)
-        .toString(36)
-        .slice(0, 3),
-      3,
-      '0'
-    )
-  return hash
-}
 
-//
-//
-
-function createNewReact() {
-  var 
-}
 
 // bot.onText(/\/(yandere|yande\.re|y\/) *([0-9]*)/, (msg, match) => {})
 
@@ -357,54 +336,6 @@ bot.onText(/\/refreshConfig/, (msg, match) => {
   }
 })
 
-// bot.onText(/\/approve( (.+)( (.+))?)?/, (msg, match) => {
-//   chatId = msg.chat.id
-//   if (match[1]) {
-//     token = match[4] || match[2]
-//     if (match[4]) {
-//       if (!isUserApproved(msg.from.id)) {
-//         reportError(
-//           chatId,
-//           'UserNotApprovedException: Please run this command AFTER being approved.'
-//         )
-//         return
-//       }
-//       switch (match[2]) {
-//         case 'add':
-//           addToken(token, false, chatId)
-//           break
-//         case 'once':
-//           addToken(token, true, chatId)
-//           break
-//         case 'remove':
-//           removeToken(token, chatId)
-//           break
-//         case 'list':
-//           serviceUnavil(chatId)
-//           break
-//         case 'clean':
-//           serviceUnavil(chatId)
-//           break
-//       }
-//     } else {
-//       index = config.approvementTokens.findIndex((v, i, o) => {
-//         return v.token == token
-//       })
-//       if (token == config.token || index >= 0) {
-//         config.approvedUsers.push(msg.from.id)
-//         config.approvedUsers = _.sortedUniq(_.sort(config.approvedUsers))
-//         if (config.approvementTokens[index].once == true)
-//           config.approvementTokens.remove(index)
-//         bot.sendMessage(msg.chat.id, config.replies.approvement.random())
-//       } else {
-//         bot.sendMessage(msg.chat.id, config.replies.disapprovement.random())
-//       }
-//     }
-//   } else {
-//     bot.sendMessage(msg.chat.id, config.usages.approve)
-//   }
-// })
-
 bot.onText(/\/restart/, (msg, match) => {
   // serviceUnavil(msg.chat.id)
   if (!isUserApproved(msg.from.id)) {
@@ -425,18 +356,18 @@ function packUpForRestart(){
 }
 
 
-bot.onText(/\/system (.+)/, (msg, match) => {
-  serviceUnavil(msg.chat.id)
-  return
-  if (!isUserApproved(msg.from.id)) {
-    reportError(
-      msg.chat.id,
-      'UserNotApprovedException: Please run this command AFTER being approved.'
-    )
-    return
-  }
-  bot.sendMessage(msg.chat.id, cp.execSync(match[1]))
-})
+// bot.onText(/\/system (.+)/, (msg, match) => {
+//   serviceUnavil(msg.chat.id)
+//   return
+//   if (!isUserApproved(msg.from.id)) {
+//     reportError(
+//       msg.chat.id,
+//       'UserNotApprovedException: Please run this command AFTER being approved.'
+//     )
+//     return
+//   }
+//   bot.sendMessage(msg.chat.id, cp.execSync(match[1]))
+// })
 
 bot.onText(/\/eatwhat/, msg => {
   getKeys(msg)
@@ -469,10 +400,10 @@ bot.onText(/^[^\\\/].*/, msg => {
   //   bot.sendMessage(msg.chat.id, `RndNum: ${random}`)
 })
 
-bot.onText(/\/radix( +f +(%d+))? +(%d+) +([+-]?%d+)/im, (msg, match) => {
-  radix = match[3]
-  number = match[4]
-  fromRadix = match[1] ? parseInt(match[2]) : 10
-  result = parseInt(number, fromRadix).toString(radix)
-  bot.sendMessage(msg.chat.id, result)
-})
+// bot.onText(/\/radix( +f +(%d+))? +(%d+) +([+-]?%d+)/im, (msg, match) => {
+//   radix = match[3]
+//   number = match[4]
+//   fromRadix = match[1] ? parseInt(match[2]) : 10
+//   result = parseInt(number, fromRadix).toString(radix)
+//   bot.sendMessage(msg.chat.id, result)
+// })

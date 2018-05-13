@@ -4,6 +4,8 @@
   "description": "a bot",
   "main": "p.js",
   "dependencies": {
+    "@types/lodash": "^4.14.108",
+    "@types/node-telegram-bot-api": "^0.28.3",
     "lodash": "^4.17.5",
     "node-telegram-bot-api": "^0.30.0",
     "yaml-js": "^0.2.3",
